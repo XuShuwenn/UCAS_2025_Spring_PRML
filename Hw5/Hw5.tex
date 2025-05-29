@@ -1,0 +1,423 @@
+\documentclass{article}
+\usepackage{xeCJK} 
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx} 
+\usepackage{tikz}
+\usepackage{geometry}
+\usepackage{array}
+\geometry{a4paper, margin=1in}
+
+
+\setCJKmainfont{SimSun}
+\renewcommand\CJKfamilydefault{\CJKrmdefault}
+\usepackage{sectsty}
+\sectionfont{\normalfont}
+
+\usetikzlibrary{shapes.geometric, arrows}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!20]
+\tikzstyle{decision} = [diamond, minimum width=3.5cm, minimum height=1cm, text centered, draw=black, fill=green!20]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
+\begin{document}
+\title{PRML第五次作业}
+\author{许书闻 2023K8009926005}
+\maketitle
+\section*{第1题}
+
+a. \[H(D)=-\frac{6}{10}*log(\frac{6}{10})-\frac{4}{10}*log(\frac{4}{10})=0.97\]
+b. 
+\begin{align}
+  H(D|A)&=\frac{4}{10}*H(D|A_0)+\frac{6}{10}*H(D|A_1)\\
+        &=-0.4*(\frac{1}{4}*log(\frac{1}{4})+\frac{3}{4}*log(\frac{3}{4}))-0.6*(\frac{3}{6}*log(\frac{3}{6})+\frac{3}{6}*log(\frac{3}{6}))\\
+      &=0.92
+\end{align}
+c. \[IG(D,A)=H(D)-H(D|A)=0.05\]
+d. \[IV(A)=-(\frac{6}{10}*log(\frac{6}{10})+\frac{4}{10}*log(\frac{4}{10}))=0.97\]
+\[GR(D,A)=\frac{IG(D,A)}{H(D)}=\frac{0.05}{0.97}=0.052\]
+
+\section*{第2题}
+a. \[G(D)=1-(\frac{6}{10})^2-(\frac{4}{10})^2=1-0.36-0.16=0.48\]
+b. 
+\begin{align}
+  G(D^1)&=1-(\frac{1}{4})^2-(\frac{3}{4})^2=0.375\\
+  G(D^2)&=1-(\frac{3}{6})^2-(\frac{3}{6})^2=0.5
+\end{align}
+\[GiniIndex=\frac{4}{10}*G(D^1)+\frac{6}{10}*G(D^2)=0.4*0.375+0.6*0.5=0.45\]
+
+\section*{第3题}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+Sample & Age & Y \\
+\hline
+1 & 22 & 0 \\
+2 & 25 & 0 \\
+3 & 28 & 1 \\
+4 & 30 & 1 \\
+5 & 32 & 1 \\
+6 & 35 & 0 \\
+7 & 40 & 1 \\
+8 & 45 & 1 \\
+\hline
+\end{tabular}
+\caption{数据集}
+\end{table}
+
+\subsection*{(a) 列出所有可能的划分点}
+可能的划分点为相邻 Age 值的中间点： 23.5, 26.5, 29.0, 31.0, 33.5, 37.5, 42.5。
+
+\subsection*{(b) 对每个划分点计算信息增益}
+总样本数 $|D| = 8$，其中 Y = 0 有 3 个，Y = 1 有 5 个。  
+计算整体熵 $H(D)$：
+\[
+p_0 = \frac{3}{8}, \quad p_1 = \frac{5}{8}
+\]
+\[
+H(D) = - \left( \frac{3}{8} \log_2 \frac{3}{8} + \frac{5}{8} \log_2 \frac{5}{8} \right)
+\]
+\[
+= - \left( \frac{3}{8} \log_2 0.375 + \frac{5}{8} \log_2 0.625 \right)
+=0.956\]
+1. 划分点 23.5 (Age $\leq$ 23.5: 样本 1; Age $>$ 23.5: 样本 2-8)
+- 左子集 ($D_L$): Y = 0 (1), Y = 1 (0), $|D_L| = 1$
+  \[
+  H(D_L) = - \left( 1 \cdot \log_2 1 + 0 \cdot \log_2 0 \right) = 0
+  \]
+- 右子集 ($D_R$): Y = 0 (2), Y = 1 (5), $|D_R| = 7$
+  \[
+  H(D_R) = - \left( \frac{2}{7} \log_2 \frac{2}{7} + \frac{5}{7} \log_2 \frac{5}{7} \right)
+  \]
+  \[
+  \log_2 \frac{2}{7} \approx -1.807, \quad \log_2 \frac{5}{7} \approx -0.485
+  \]
+  \[
+  H(D_R) = - \left( \frac{2}{7} \cdot (-1.807) + \frac{5}{7} \cdot (-0.485) \right)
+  \]
+  \[
+  = - \left( -0.516 + -0.346 \right) = 0.862
+  \]
+- 信息增益 (整体熵 $H(D) = 0.956$):
+  \[
+  \text{Gain} = 0.956 - \left( \frac{1}{8} \cdot 0 + \frac{7}{8} \cdot 0.862 \right) = 0.956 - 0.754 = 0.202
+  \]
+
+2. 划分点 26.5 (Age $\leq$ 26.5: 样本 1-2; Age $>$ 26.5: 样本 3-8)
+- 左子集 ($D_L$): Y = 0 (2), Y = 1 (0), $|D_L| = 2$, $H(D_L) = 0$
+- 右子集 ($D_R$): Y = 0 (1), Y = 1 (5), $|D_R| = 6$, $H(D_R) = 0.650$
+- 信息增益：
+  \[
+  \text{Gain} = 0.956 - \left( \frac{2}{8} \cdot 0 + \frac{6}{8} \cdot 0.650 \right) = 0.468
+  \]
+
+3. 划分点 29.0 (Age $\leq$ 29.0: 样本 1-3; Age $>$ 29.0: 样本 4-8)
+- 左子集 ($D_L$): Y = 0 (2), Y = 1 (1), $|D_L| = 3$
+  \[
+  H(D_L) = - \left( \frac{2}{3} \log_2 \frac{2}{3} + \frac{1}{3} \log_2 \frac{1}{3} \right)
+  \]
+  \[
+  \log_2 \frac{2}{3} \approx -0.585, \quad \log_2 \frac{1}{3} \approx -1.585
+  \]
+  \[
+  H(D_L) = - \left( \frac{2}{3} \cdot (-0.585) + \frac{1}{3} \cdot (-1.585) \right) = 0.918
+  \]
+- 右子集 ($D_R$): Y = 0 (1), Y = 1 (4), $|D_R| = 5$
+  \[
+  H(D_R) = - \left( \frac{1}{5} \log_2 \frac{1}{5} + \frac{4}{5} \log_2 \frac{4}{5} \right)
+  \]
+  \[
+  \log_2 \frac{1}{5} \approx -2.322, \quad \log_2 \frac{4}{5} \approx -0.322
+  \]
+  \[
+  H(D_R) = - \left( \frac{1}{5} \cdot (-2.322) + \frac{4}{5} \cdot (-0.322) \right) = 0.722
+  \]
+- 信息增益：
+  \[
+  \text{Gain} = 0.956 - \left( \frac{3}{8} \cdot 0.918 + \frac{5}{8} \cdot 0.722 \right) = 0.956 - 0.810 = 0.146
+  \]
+
+4. 划分点 31.0 (Age $\leq$ 31.0: 样本 1-4; Age $>$ 31.0: 样本 5-8)
+- 左子集 ($D_L$): Y = 0 (2), Y = 1 (2), $|D_L| = 4$
+  \[
+  H(D_L) = - \left( \frac{2}{4} \log_2 \frac{2}{4} + \frac{2}{4} \log_2 \frac{2}{4} \right)
+  \]
+  \[
+  \log_2 \frac{2}{4} = \log_2 0.5 \approx -1.0
+  \]
+  \[
+  H(D_L) = - \left( \frac{2}{4} \cdot (-1.0) + \frac{2}{4} \cdot (-1.0) \right) = 1.0
+  \]
+- 右子集 ($D_R$): Y = 0 (1), Y = 1 (3), $|D_R| = 4$
+  \[
+  H(D_R) = - \left( \frac{1}{4} \log_2 \frac{1}{4} + \frac{3}{4} \log_2 \frac{3}{4} \right)
+  \]
+  \[
+  \log_2 \frac{1}{4} = -2.0, \quad \log_2 \frac{3}{4} \approx -0.415
+  \]
+  \[
+  H(D_R) = - \left( \frac{1}{4} \cdot (-2.0) + \frac{3}{4} \cdot (-0.415) \right) = 0.811
+  \]
+- 信息增益：
+  \[
+  \text{Gain} = 0.956 - \left( \frac{4}{8} \cdot 1.0 + \frac{4}{8} \cdot 0.811 \right) = 0.956 - 0.905 = 0.051
+  \]
+
+5. 划分点 33.5 (Age $\leq$ 33.5: 样本 1-5; Age $>$ 33.5: 样本 6-8)
+- 左子集 ($D_L$): Y = 0 (2), Y = 1 (3), $|D_L| = 5$
+  \[
+  H(D_L) = - \left( \frac{2}{5} \log_2 \frac{2}{5} + \frac{3}{5} \log_2 \frac{3}{5} \right)
+  \]
+  \[
+  \log_2 \frac{2}{5} \approx -1.322, \quad \log_2 \frac{3}{5} \approx -0.737
+  \]
+  \[
+  H(D_L) = - \left( \frac{2}{5} \cdot (-1.322) + \frac{3}{5} \cdot (-0.737) \right) = 0.971
+  \]
+- 右子集 ($D_R$): Y = 0 (1), Y = 1 (2), $|D_R| = 3$
+  \[
+  H(D_R) = - \left( \frac{1}{3} \log_2 \frac{1}{3} + \frac{2}{3} \log_2 \frac{2}{3} \right)
+  \]
+  \[
+  \log_2 \frac{1}{3} \approx -1.585, \quad \log_2 \frac{2}{3} \approx -0.585
+  \]
+  \[
+  H(D_R) = - \left( \frac{1}{3} \cdot (-1.585) + \frac{2}{3} \cdot (-0.585) \right) = 0.918
+  \]
+- 信息增益：
+  \[
+  \text{Gain} = 0.956 - \left( \frac{5}{8} \cdot 0.971 + \frac{3}{8} \cdot 0.918 \right) = 0.956 - 0.951 = 0.005
+  \]
+
+6. 划分点 37.5 (Age $\leq$ 37.5: 样本 1-6; Age $>$ 37.5: 样本 7-8)
+- 左子集 ($D_L$): Y = 0 (3), Y = 1 (3), $|D_L| = 6$
+  \[
+  H(D_L) = - \left( \frac{3}{6} \log_2 \frac{3}{6} + \frac{3}{6} \log_2 \frac{3}{6} \right)
+  \]
+  \[
+  \log_2 \frac{3}{6} = \log_2 0.5 \approx -1.0
+  \]
+  \[
+  H(D_L) = - \left( \frac{3}{6} \cdot (-1.0) + \frac{3}{6} \cdot (-1.0) \right) = 1.0
+  \]
+- 右子集 ($D_R$): Y = 0 (0), Y = 1 (2), $|D_R| = 2$
+  \[
+  H(D_R) = - \left( 0 \cdot \log_2 0 + 1 \cdot \log_2 1 \right) = 0
+  \]
+- 信息增益：
+  \[
+  \text{Gain} = 0.956 - \left( \frac{6}{8} \cdot 1.0 + \frac{2}{8} \cdot 0 \right) = 0.956 - 0.75 = 0.206
+  \]
+
+7. 划分点 42.5 (Age $\leq$ 42.5: 样本 1-7; Age $>$ 42.5: 样本 8)
+- 左子集 ($D_L$): Y = 0 (3), Y = 1 (4), $|D_L| = 7$
+  \[
+  H(D_L) = - \left( \frac{3}{7} \log_2 \frac{3}{7} + \frac{4}{7} \log_2 \frac{4}{7} \right)
+  \]
+  \[
+  \log_2 \frac{3}{7} \approx -1.222, \quad \log_2 \frac{4}{7} \approx -0.807
+  \]
+  \[
+  H(D_L) = - \left( \frac{3}{7} \cdot (-1.222) + \frac{4}{7} \cdot (-0.807) \right) = 0.985
+  \]
+- 右子集 ($D_R$): Y = 0 (0), Y = 1 (1), $|D_R| = 1$
+  \[
+  H(D_R) = - \left( 0 \cdot \log_2 0 + 1 \cdot \log_2 1 \right) = 0
+  \]
+- 信息增益：
+  \[
+  \text{Gain} = 0.956 - \left( \frac{7}{8} \cdot 0.985 + \frac{1}{8} \cdot 0 \right) = 0.956 - 0.863 = 0.093
+  \]
+
+\subsection*{(c) 找出最优划分点}
+比较各划分点的信息增益：\\
+- 23.5: 0.202  \\
+- 26.5: 0.468  \\
+- 29.0: 0.146  \\
+- 31.0: 0.051  \\
+- 33.5: 0.005  \\
+- 37.5: 0.206  \\
+- 42.5: 0.093  \\
+
+最优划分点为26.5(信息增益最大为0.468), 可选择23.5作为最优划分点。
+
+\section*{第4题}
+
+\subsection*{1. 预剪枝（Pre-pruning）}
+
+\textbf{思想：} 在构建决策树的过程中，通过设定提前停止的条件（如信息增益阈值、最大深度、最小样本数等），避免生成过于复杂的子树。
+
+\textbf{常见策略包括：}
+\begin{itemize}
+  \item 若当前节点的样本数小于某一设定阈值，则不再继续划分；
+  \item 若划分后信息增益小于阈值，则终止划分；
+  \item 使用交叉验证评估划分是否有效；
+  \item 设置最大树深度或最大分支数。
+\end{itemize}
+
+\subsection*{2. 后剪枝（Post-pruning）}
+
+\textbf{思想：} 首先让决策树尽可能生长完全（可能过拟合），然后自底向上回溯，剪除那些对模型泛化性能贡献不大的子树。
+
+\textbf{常见策略包括：}
+\begin{itemize}
+  \item 利用验证集评估子树是否可以被叶节点替代；
+  \item 采用最小错误剪枝（Reduced Error Pruning）；
+  \item 采用代价复杂度剪枝（Cost-Complexity Pruning, 如 CART 中的剪枝策略）。
+\end{itemize}
+
+\subsection*{3. 预剪枝与后剪枝的对比}
+
+\begin{table}[h!]
+\centering
+
+\begin{tabular}{|m{4cm}|m{5cm}|m{5cm}|}
+\hline
+\textbf{比较维度} & \textbf{预剪枝（Pre-pruning）} & \textbf{后剪枝（Post-pruning）} \\
+\hline
+剪枝时机 & 树构建过程中进行判断，提前停止划分 & 树构建完成后，自底向上回溯剪枝 \\
+\hline
+控制策略 & 基于启发式规则（如信息增益、样本数） & 基于模型评估（如验证集性能） \\
+\hline
+计算成本 & 低，适合大数据 & 高，需要构建整棵树 \\
+\hline
+泛化能力 & 可能欠拟合，保守 & 通常更好，避免过拟合 \\
+\hline
+实现复杂度 & 相对简单 & 略复杂 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection*{4. 在不同数据规模下的适用性}
+
+\begin{itemize}
+  \item \textbf{大规模数据集：} 更推荐使用 \textbf{预剪枝}。其计算效率更高，可以有效控制模型规模和构建时间，适应海量数据的训练需求。
+  \item \textbf{小规模数据集：} 更推荐使用 \textbf{后剪枝}。可以先充分拟合数据，然后通过剪枝来提升模型的泛化能力，避免数据不足造成的欠拟合。
+\end{itemize}
+
+\textbf{总结：}
+\begin{quote}
+\emph{预剪枝更高效，适用于大数据；后剪枝更精确，适用于小数据。}
+\end{quote}
+
+\section*{第5题}
+
+\subsection*{多变量决策树与常规（单变量）决策树的核心差异}
+
+\begin{itemize}
+  \item \textbf{划分标准不同：}
+    \begin{itemize}
+      \item \textbf{单变量决策树}：每个内部节点只基于一个特征进行划分，形式如：
+      \[
+      x_i < c
+      \]
+      \item \textbf{多变量决策树}：每个内部节点基于多个特征的线性组合进行划分，形式如：
+      \[
+      w_1 x_1 + w_2 x_2 + \cdots + w_n x_n < c
+      \]
+    \end{itemize}
+    
+  \item \textbf{划分边界形状：}
+    \begin{itemize}
+      \item 单变量决策树划分为与坐标轴平行的超平面。
+      \item 多变量决策树划分为任意方向的超平面（斜面）。
+    \end{itemize}
+
+  \item \textbf{模型对比：}
+
+  \begin{center}
+  \begin{tabular}{|l|c|c|}
+  \hline
+  \textbf{属性} & \textbf{单变量决策树} & \textbf{多变量决策树} \\
+  \hline
+  每个节点划分依据 & 单个特征 & 多个特征线性组合 \\
+  \hline
+  划分边界 & 轴对齐超平面 & 任意超平面 \\
+  \hline
+  可解释性 & 较强 & 较弱 \\
+  \hline
+  表达能力 & 较弱 & 较强 \\
+  \hline
+  计算复杂度 & 较低 & 较高 \\
+  \hline
+  \end{tabular}
+  \end{center}
+\end{itemize}
+
+\section*{第6题}
+与分类树（叶节点为离散类别）不同的是，回归树的叶节点为实数值。回归树其实是将输入空间划分为多个单元，每个区域的输出值为该区域内所有点标签值的平均数。
+\subsection{示例数据}
+假设我们有以下简单数据集，用于预测房屋价格（单位：万元），基于房屋面积（单位：平方米）：
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+面积 ($x$) & 价格 ($y$) \\
+\hline
+50 & 200 \\
+60 & 220 \\
+80 & 300 \\
+100 & 350 \\
+120 & 400 \\
+\hline
+\end{tabular}
+\caption{房屋面积与价格数据集}
+\end{table}
+
+\subsection{划分准则}
+回归树的划分准则通常是最小化均方误差（Mean Squared Error, MSE）。对于某个节点，假设其数据集为 $D$，包含 $n$ 个样本 $\{(x_i, y_i)\}_{i=1}^n$，目标是选择一个特征 $x$ 和阈值 $s$，将数据划分为两个子区域 $R_1 = \{x_i \leq s\}$ 和 $R_2 = \{x_i > s\}$，使得总的加权 MSE 最小：
+
+\[
+\text{MSE} = \frac{|R_1|}{n} \cdot \text{Var}(R_1) + \frac{|R_2|}{n} \cdot \text{Var}(R_2)
+\]
+
+其中，$\text{Var}(R_j) = \frac{1}{|R_j|} \sum_{i \in R_j} (y_i - \bar{y}_{R_j})^2$，$\bar{y}_{R_j}$ 是区域 $R_j$ 中目标值的均值。
+
+\subsection{构建回归树}
+以面积作为特征，尝试在面积 $x = 70$ 处划分：
+- 区域 $R_1$（$x \leq 70$）：包含 $(50, 200), (60, 220)$，均值 $\bar{y}_{R_1} = \frac{200 + 220}{2} = 210$。
+  \[
+  \text{Var}(R_1) = \frac{(200 - 210)^2 + (220 - 210)^2}{2} = \frac{100 + 100}{2} = 100
+  \]
+- 区域 $R_2$（$x > 70$）：包含 $(80, 300), (100, 350), (120, 400)$，均值 $\bar{y}_{R_2} = \frac{300 + 350 + 400}{3} = 350$。
+  \[
+  \text{Var}(R_2) = \frac{(300 - 350)^2 + (350 - 350)^2 + (400 - 350)^2}{3} = \frac{2500 + 0 + 2500}{3} \approx 1666.67
+  \]
+- 加权 MSE：
+  \[
+  \text{MSE} = \frac{2}{5} \cdot 100 + \frac{3}{5} \cdot 1666.67 = 40 + 1000 = 1040
+  \]
+
+尝试其他划分点（如 $x = 90$）并比较 MSE，选择 MSE 最小的划分点。假设 $x = 70$ 是最优划分点，继续对子区域递归划分，直到满足停止条件（如最大深度或最小样本数）。
+
+\subsection{回归树结构}
+最终回归树可能如下：
+
+\[
+\text{根节点：} \quad x \leq 70
+\]
+\[
+\begin{cases}
+\text{左子节点：} & \text{预测值} = 210 \quad (x \leq 70) \\
+\text{右子节点：} & x \leq 100 \\
+\begin{cases}
+\text{左子节点：} & \text{预测值} = 325 \quad (70 < x \leq 100) \\
+\text{右子节点：} & \text{预测值} = 400 \quad (x > 100)
+\end{cases}
+\end{cases}
+\]
+
+\subsection{预测过程}
+对于新样本 $x = 85$：
+1. 从根节点开始：$85 > 70$，进入右子节点。
+2. 右子节点：$85 \leq 100$，进入左子节点。
+3. 预测值：$325$ 万元。
+
+
+\end{document}
