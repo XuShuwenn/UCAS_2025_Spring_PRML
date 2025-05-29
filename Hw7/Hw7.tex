@@ -1,0 +1,356 @@
+\documentclass{article}
+\usepackage{xeCJK} 
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx} 
+\usepackage{tikz}
+\usepackage{CJKutf8}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+
+\setCJKmainfont{SimSun}
+\renewcommand\CJKfamilydefault{\CJKrmdefault}
+\usepackage{sectsty}
+\sectionfont{\normalfont}
+
+\usetikzlibrary{shapes.geometric, arrows}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!20]
+\tikzstyle{decision} = [diamond, minimum width=3.5cm, minimum height=1cm, text centered, draw=black, fill=green!20]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{document}
+\title{PRML第五次作业}
+\author{许书闻 2023K8009926005}
+\maketitle
+\section*{第1题}
+(a)
+\[P=(1-\frac{1}{N})^N\]
+(b)
+\[P=(1-\frac{1}{N})^{NB}\]
+(c)
+
+当B=N时，样本一次都未被选中的概率：
+
+\[P=\lim_{N \to \infty}(1-\frac{1}{N})^{N^2}=\lim_{N\to \infty}[(1-\frac{1}{N})^{-N}]^{-N}=\lim_{N\to\infty}\frac{1}{e^N}=0  \]  
+所以至少被选中一次的概率为\[1-P=1\]
+(d)
+\[200\times (1-\frac{1}{N})^N=200\times 0.368=74\]
+
+\section*{第2题}
+
+\subsection*{两种方法的区别}
+
+\subsubsection*{1.1 Bagging 的机制}
+\begin{itemize}
+    \item \textbf{核心思想}：Bagging（Bootstrap Aggregating）通过从原始训练数据中有放回地抽取样本子集（Bootstrap 采样），为每棵决策树生成不同的训练集，从而增加模型的多样性。
+    \item \textbf{特征选择}：在节点分裂时，Bagging 考虑\emph{所有特征}，并选择最优分裂特征（基于信息增益或基尼指数等）。
+    \item \textbf{多样性来源}：多样性仅来源于训练样本的随机性。由于每棵树的训练数据不同，树之间的结构和预测存在差异，但特征选择过程无额外限制。
+\end{itemize}
+
+\subsubsection*{1.2 随机森林的机制}
+\begin{itemize}
+    \item \textbf{核心思想}：随机森林在 Bagging 基础上进一步引入特征维度的随机性。每棵决策树在节点分裂时，从\emph{随机抽取的特征子集}中选择最优分裂特征（通常特征子集大小为 $\sqrt{n}$ 或 $\log_2(n)$，其中 $n$ 为总特征数）。
+    \item \textbf{特征选择}：在每次节点分裂时，随机森林随机选择一个特征子集，然后在该子集内寻找最优分裂点。
+    \item \textbf{多样性来源}：多样性来源于\emph{样本子集的随机性}（继承自 Bagging）和\emph{特征子集的随机性}，使树之间的结构差异更大。
+\end{itemize}
+
+\subsubsection*{1.3 差异总结}
+\begin{itemize}
+    \item \textbf{样本随机性}：两者均使用 Bootstrap 采样生成样本子集，样本随机性无本质区别。
+    \item \textbf{特征随机性}：随机森林额外引入特征子集的随机选择，而 Bagging 始终考虑所有特征。这增加了随机森林中树之间的独立性和多样性。
+    \item \textbf{模型复杂度}：随机森林的特征子集限制使单棵树的“视野”更窄，预测能力可能较弱（偏差略高），但集成效果通常更好。
+\end{itemize}
+
+\subsection*{2. 对偏差和方差的影响}
+
+集成模型的偏差和方差可分解为单棵树的偏差、单棵树的方差以及树之间的相关性。以下从理论角度分析。
+
+\subsubsection*{2.1 Bagging 的偏差与方差}
+\begin{itemize}
+    \item \textbf{偏差}：
+    \begin{itemize}
+        \item Bagging 使用完整特征集构建每棵决策树，单棵树的偏差较低，接近于单棵完整决策树的偏差。
+        \item 集成模型通过平均（分类为投票，回归为平均）多个树的预测，偏差通常与单棵树相当，因为平均不显著改变偏差。
+    \end{itemize}
+    \item \textbf{方差}：
+    \begin{itemize}
+        \item Bagging 的主要目标是降低方差。通过 Bootstrap 采样，每棵树基于不同训练子集，树之间的预测差异被平均化，显著降低集成模型的方差。
+        \item 但由于每棵树考虑所有特征，树之间的相关性可能较高（尤其当某些特征特别重要时），限制了方差降低的幅度。
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{2.2 随机森林的偏差与方差}
+\begin{itemize}
+    \item \textbf{偏差}：
+    \begin{itemize}
+        \item 随机森林因节点分裂时只考虑部分特征子集，单棵树的预测能力较 Bagging 弱，单棵树的偏差略高（因无法始终选择全局最优分裂特征）。
+        \item 集成模型的偏差差异不大，因为大量树的集成能逼近整体数据模式，偏差接近单棵完整决策树的偏差。
+    \end{itemize}
+    \item \textbf{方差}：
+    \begin{itemize}
+        \item 随机森林通过特征子集的随机选择，降低树之间的相关性 $\rho$，显著降低集成模型的方差。
+        \item 集成模型方差可表示为：
+        \[
+        \text{Var}(\hat{f}) = \rho \cdot \sigma^2 + \frac{1 - \rho}{T} \cdot \sigma^2
+        \]
+        其中 $\hat{f}$ 为集成模型预测，$\rho$ 为树间相关性，$\sigma^2$ 为单棵树预测方差，$T$ 为树的棵数。随机森林通过降低 $\rho$ 显著减少方差。
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{2.3 偏差与方差比较}
+\begin{itemize}
+    \item \textbf{偏差}：随机森林的单棵树偏差略高于 Bagging，但集成模型偏差差异不大。
+    \item \textbf{方差}：随机森林通过降低树间相关性，集成模型的方差通常低于 Bagging。
+    \item \textbf{总体效果}：随机森林牺牲单棵树的预测能力（偏差略增），换取更大树间多样性，从而显著降低方差，通常在泛化性能上优于 Bagging。
+\end{itemize}
+
+\section*{第3题}
+(a)
+\[\epsilon_1=\sum_{i=1}^{5}0.2\times\mathcal{I}\{y_i\neq h_t(x_i)\}=0.2\times (1+1)=0.4\]
+(b)
+\[\alpha_1=\frac{1}{2}\log(\frac{1-0.4}{0.4})=0.088\]
+(c)
+\[\omega_{i}^{(2)}=\frac{\omega_i^{(1)}exp(-\alpha_ty_ih_t(x_i))}{Z_t},~~Z_t=0.2\times(3\cdot e^{-0.088}+2\cdot e^{0.088})=0.98628\]
+
+所以更新后的权重向量为
+\[\omega_1=\omega_4=\omega_5=\frac{0.5\times0.9158}{0.98628}=0.186,\omega_2=\omega_3=\frac{0.2\times1.092}{0.98628}=0.221\]
+
+\section*{第4题}
+
+\subsection*{step1. 欧氏距离计算}
+对于样本 \( \mathbf{x}_i \) 和 \( \mathbf{x}_j \)，欧氏距离为：
+\[
+d(\mathbf{x}_i, \mathbf{x}_j) = \sqrt{\sum_{k=1}^5 (x_{i,k} - x_{j,k})^2}
+\]
+计算所有样本对的距离，得到初始距离矩阵：
+\[
+\begin{array}{c|ccccc}
+ & \mathbf{x}_1 & \mathbf{x}_2 & \mathbf{x}_3 & \mathbf{x}_4 & \mathbf{x}_5 \\
+\hline
+\mathbf{x}_1 & 0 & 1.732 & 3.873 & 2.449 & 3.317 \\
+\mathbf{x}_2 & 1.732 & 0 & 2.449 & 2.236 & 2.828 \\
+\mathbf{x}_3 & 3.873 & 2.449 & 0 & 3.606 & 2.449 \\
+\mathbf{x}_4 & 2.449 & 2.236 & 3.606 & 0 & 2.646 \\
+\mathbf{x}_5 & 3.317 & 2.828 & 2.449 & 2.646 & 0 \\
+\end{array}
+\]
+
+\subsection*{step2. 层次化聚类过程}
+使用\emph{单链接}（最近距离准则），簇间距离定义为：
+\[
+d(C_i, C_j) = \min_{\mathbf{x} \in C_i, \mathbf{y} \in C_j} d(\mathbf{x}, \mathbf{y})
+\]
+采用凝聚型层次聚类，从每个样本作为一个单独的簇开始，逐步合并距离最近的簇。
+
+\subsubsection*{步骤 1：初始簇}
+初始簇为：\( \{ \mathbf{x}_1 \}, \{ \mathbf{x}_2 \}, \{ \mathbf{x}_3 \}, \{ \mathbf{x}_4 \}, \{ \mathbf{x}_5 \} \).
+
+\subsubsection*{步骤 2：第一次合并}
+\begin{itemize}
+    \item 最小距离：\( d(\mathbf{x}_1, \mathbf{x}_2) = 1.732 \).
+    \item 合并 \( \mathbf{x}_1 \) 和 \( \mathbf{x}_2 \) 形成簇 \( C_1 = \{ \mathbf{x}_1, \mathbf{x}_2 \} \)，高度为 1.732。
+    \item 更新距离矩阵：
+    \[
+    \begin{array}{c|cccc}
+     & C_1 & \mathbf{x}_3 & \mathbf{x}_4 & \mathbf{x}_5 \\
+    \hline
+    C_1 & 0 & 2.449 & 2.236 & 2.828 \\
+    \mathbf{x}_3 & 2.449 & 0 & 3.606 & 2.449 \\
+    \mathbf{x}_4 & 2.236 & 3.606 & 0 & 2.646 \\
+    \mathbf{x}_5 & 2.828 & 2.449 & 2.646 & 0 \\
+    \end{array}
+    \]
+\end{itemize}
+
+\subsubsection*{步骤 3：第二次合并}
+\begin{itemize}
+    \item 最小距离：\( d(C_1, \mathbf{x}_4) = 2.236 \).
+    \item 合并 \( C_1 \) 和 \( \mathbf{x}_4 \) 形成簇 \( C_2 = \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_4 \} \)，高度为 2.236。
+    \item 更新距离矩阵：
+    \[
+    \begin{array}{c|ccc}
+     & C_2 & \mathbf{x}_3 & \mathbf{x}_5 \\
+    \hline
+    C_2 & 0 & 2.449 & 2.646 \\
+    \mathbf{x}_3 & 2.449 & 0 & 2.449 \\
+    \mathbf{x}_5 & 2.646 & 2.449 & 0 \\
+    \end{array}
+    \]
+\end{itemize}
+
+\subsubsection*{步骤 4：第三次合并}
+\begin{itemize}
+    \item 最小距离：\( d(C_2, \mathbf{x}_3) = 2.449 \)（与 \( d(\mathbf{x}_3, \mathbf{x}_5) = 2.449 \) 相等，选择前者）。
+    \item 合并 \( C_2 \) 和 \( \mathbf{x}_3 \) 形成簇 \( C_3 = \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4 \} \)，高度为 2.449。
+    \item 更新距离矩阵：
+    \[
+    \begin{array}{c|cc}
+     & C_3 & \mathbf{x}_5 \\
+    \hline
+    C_3 & 0 & 2.449 \\
+    \mathbf{x}_5 & 2.449 & 0 \\
+    \end{array}
+    \]
+\end{itemize}
+
+\subsubsection*{步骤 5：第四次合并}
+\begin{itemize}
+    \item 最小距离：\( d(C_3, \mathbf{x}_5) = 2.449 \).
+    \item 合并 \( C_3 \) 和 \( \mathbf{x}_5 \) 形成最终簇 \( C_4 = \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4, \mathbf{x}_5 \} \)，高度为 2.449。
+\end{itemize}
+
+\subsection*{4. 聚类分级树}
+聚类过程可以用树状图表示，高度对应合并时的距离：
+\begin{itemize}
+    \item 高度 1.732：合并 \( \mathbf{x}_1 \) 和 \( \mathbf{x}_2 \) 形成 \( C_1 \).
+    \item 高度 2.236：合并 \( C_1 \) 和 \( \mathbf{x}_4 \) 形成 \( C_2 \).
+    \item 高度 2.449：合并 \( C_2 \) 和 \( \mathbf{x}_3 \) 形成 \( C_3 \).
+    \item 高度 2.449：合并 \( C_3 \) 和 \( \mathbf{x}_5 \) 形成 \( C_4 \).
+\end{itemize}
+
+以下是聚类分级树：
+\begin{center}
+\begin{tikzpicture}
+    % 节点（样本）
+    \node (x1) at (0,0) {\( \mathbf{x}_1 \)};
+    \node (x2) at (2,0) {\( \mathbf{x}_2 \)};
+    \node (x4) at (4,0) {\( \mathbf{x}_4 \)};
+    \node (x3) at (6,0) {\( \mathbf{x}_3 \)};
+    \node (x5) at (8,0) {\( \mathbf{x}_5 \)};
+
+    % 合并节点
+    \node (c1) at (1,1.732) {};
+    \node (c2) at (2,2.236) {};
+    \node (c3) at (4,2.449) {};
+    \node (c4) at (4.5,2.449) {};
+
+    % 连接线
+    \draw (x1) -- (c1) node[midway, left] {1.732};
+    \draw (x2) -- (c1);
+    \draw (c1) -- (c2) node[midway, left] {2.236};
+    \draw (x4) -- (c2);
+    \draw (c2) -- (c3) node[midway, left] {2.449};
+    \draw (x3) -- (c3);
+    \draw (c3) -- (c4) node[midway, above] {2.449};
+    \draw (x5) -- (c4);
+
+    % 高度轴
+    \draw[->] (-1,0) -- (-1,3) node[left] {高度};
+    \foreach \y/\label in {1.732/1.732, 2.236/2.236, 2.449/2.449}
+        \draw (-1.1,\y) -- (-0.9,\y) node[left] {\label};
+\end{tikzpicture}
+\end{center}
+
+\section*{第5题}
+
+\subsection*{(a)初始中心 \( \mathbf{x}_1 = (0, 0) \), \( \mathbf{x}_5 = (6, 6) \)}
+\subsubsection*{第1轮迭代}
+初始中心：
+\begin{itemize}
+    \item \( C_1 = (0, 0) \)
+    \item \( C_2 = (6, 6) \)
+\end{itemize}
+\textbf{分配样本点}：计算每个样本到 \( C_1 \), \( C_2 \) 的距离，分配到最近中心。结果：
+\begin{itemize}
+    \item 簇 1：\( \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4 \} \)
+    \item 簇 2：\( \{ \mathbf{x}_5, \mathbf{x}_6, \mathbf{x}_7, \mathbf{x}_8 \} \)
+\end{itemize}
+\textbf{更新中心}：
+\begin{itemize}
+    \item 簇 1：\( C_1 = \left( \frac{0+2+0+2}{4}, \frac{0+0+2+2}{4} \right) = (1, 1) \)
+    \item 簇 2：\( C_2 = \left( \frac{6+8+6+8}{4}, \frac{6+6+8+8}{4} \right) = (7, 7) \)
+\end{itemize}
+
+\subsubsection*{第2轮迭代}
+新中心：
+\begin{itemize}
+    \item \( C_1 = (1, 1) \)
+    \item \( C_2 = (7, 7) \)
+\end{itemize}
+\textbf{分配样本点}：分配结果与迭代 1 相同：
+\begin{itemize}
+    \item 簇 1：\( \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4 \} \)
+    \item 簇 2：\( \{ \mathbf{x}_5, \mathbf{x}_6, \mathbf{x}_7, \mathbf{x}_8 \} \)
+\end{itemize}
+\textbf{更新中心}：中心未变化，算法收敛。
+
+\textbf{最终结果}：
+\begin{itemize}
+    \item 簇 1：\( \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4 \} \)，中心 \( (1, 1) \).
+    \item 簇 2：\( \{ \mathbf{x}_5, \mathbf{x}_6, \mathbf{x}_7, \mathbf{x}_8 \} \)，中心 \( (7, 7) \).
+\end{itemize}
+
+\subsection*{(b)初始中心 \( \mathbf{x}_2 = (2, 0) \), \( \mathbf{x}_4 = (2, 2) \)}
+\subsubsection*{第1轮迭代}
+初始中心：
+\begin{itemize}
+    \item \( C_1 = (2, 0) \)
+    \item \( C_2 = (2, 2) \)
+\end{itemize}
+\textbf{分配样本点}：
+\begin{itemize}
+    \item 簇 1：\( \{ \mathbf{x}_1, \mathbf{x}_2 \} \)
+    \item 簇 2：\( \{ \mathbf{x}_3, \mathbf{x}_4, \mathbf{x}_5, \mathbf{x}_6, \mathbf{x}_7, \mathbf{x}_8 \} \)
+\end{itemize}
+\textbf{更新中心}：
+\begin{itemize}
+    \item 簇 1：\( C_1 = \left( \frac{0+2}{2}, \frac{0+0}{2} \right) = (1, 0) \)
+    \item 簇 2：\( C_2 = \left( \frac{0+2+6+8+6+8}{6}, \frac{2+2+6+6+8+8}{6} \right) = (5, 5.333) \)
+\end{itemize}
+
+\subsubsection*{第2轮迭代}
+新中心：
+\begin{itemize}
+    \item \( C_1 = (1, 0) \)
+    \item \( C_2 = (5, 5.333) \)
+\end{itemize}
+\textbf{分配样本点}：
+\begin{itemize}
+    \item 簇 1：\( \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4 \} \)
+    \item 簇 2：\( \{ \mathbf{x}_5, \mathbf{x}_6, \mathbf{x}_7, \mathbf{x}_8 \} \)
+\end{itemize}
+\textbf{更新中心}：
+\begin{itemize}
+    \item 簇 1：\( C_1 = \left( \frac{0+2+0+2}{4}, \frac{0+0+2+2}{4} \right) = (1, 1) \)
+    \item 簇 2：\( C_2 = \left( \frac{6+8+6+8}{4}, \frac{6+6+8+8}{4} \right) = (7, 7) \)
+\end{itemize}
+
+\subsubsection*{第3轮迭代}
+新中心：
+\begin{itemize}
+    \item \( C_1 = (1, 1) \)
+    \item \( C_2 = (7, 7) \)
+\end{itemize}
+\textbf{分配样本点}：分配结果与迭代 2 相同，中心未变化，算法收敛。
+
+\textbf{最终结果}：
+\begin{itemize}
+    \item 簇 1：\( \{ \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4 \} \)，中心 \( (1, 1) \).
+    \item 簇 2：\( \{ \mathbf{x}_5, \mathbf{x}_6, \mathbf{x}_7, \mathbf{x}_8 \} \)，中心 \( (7, 7) \).
+\end{itemize}
+
+\subsection*{(c)初始点选取对聚类效果的影响}
+
+\begin{itemize}
+    \item \( \mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \mathbf{x}_4 \) 靠近原点，形成紧凑簇。
+    \item \( \mathbf{x}_5, \mathbf{x}_6, \mathbf{x}_7, \mathbf{x}_8 \) 位于右上区域，形成另一紧凑簇。
+\end{itemize}
+
+\textbf{分析}：
+\begin{itemize}
+    \item \textbf{情况 (a)}：初始中心 \( \mathbf{x}_1 = (0, 0) \), \( \mathbf{x}_5 = (6, 6) \) 分别位于两个自然簇，接近真实簇中心。算法在 2 次迭代后收敛，簇分配与数据分布一致，簇内方差小，聚类效果优异。
+    \item \textbf{情况 (b)}：初始中心 \( \mathbf{x}_2 = (2, 0) \), \( \mathbf{x}_4 = (2, 2) \) 均位于第一个自然簇，未能代表第二个簇。第一次迭代分配不理想，需 3 次迭代收敛到与情况 a 相同的簇划分，效率较低。
+    \item \textbf{初始点影响}：
+    \begin{itemize}
+        \item \emph{初始点位置}：情况 a 的初始中心分布合理，快速收敛。情况 b 的初始中心过于集中，初期分配偏离真实结构。
+        \item \emph{收敛速度}：合理初始点（情况 a）减少迭代次数。初始点不当（情况 b）增加迭代次数，但最终结果一致。
+        \item \emph{局部最优风险}：本例数据分布明显，两种初始点均收敛到全局最优。但在复杂数据中，不当初始点可能导致局部最优。
+    \end{itemize}
+\end{itemize}
+
+
+\end{document}
